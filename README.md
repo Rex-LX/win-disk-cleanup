@@ -6,6 +6,17 @@ Windows C 盘深度清理与 AppData 迁移工具集。
 
 所有脚本都是纯 PowerShell，无需安装任何依赖，直接在终端运行即可。
 
+## 效果展示
+
+以下是实际清理效果对比（清理 + Junction 迁移后）：
+
+| 清理前 | 清理后 |
+|:---:|:---:|
+| ![清理前 C 盘](images/before.png) | ![清理后 C 盘](images/after.png) |
+| C 盘可用：**16.2 GB** / 250 GB | C 盘可用：**117 GB** / 250 GB |
+
+释放约 **100 GB** 空间。
+
 ## 快速开始
 
 ```powershell
@@ -42,9 +53,12 @@ powershell -ExecutionPolicy Bypass -File scripts/verify_junctions.ps1      # 验
 
 ```
 win-disk-cleanup/
-├── SKILL.md                        # QoderWork Skill 定义（可选）
+├── SKILL.md                        # AI Agent Skill 定义（可选）
 ├── README.md
 ├── LICENSE
+├── images/
+│   ├── before.png                  # 清理前截图
+│   └── after.png                   # 清理后截图
 └── scripts/
     ├── scan_disk.ps1               # 磁盘空间扫描与报告
     ├── clean_caches.ps1            # 缓存清理（支持 basic/deep 模式）
@@ -108,13 +122,25 @@ powershell -ExecutionPolicy Bypass -File scripts/verify_junctions.ps1
 - 迁移失败的文件（因锁定）建议重启后重试
 - 建议在执行前确保目标盘有足够空间
 
-## QoderWork 集成（可选）
+## AI Agent 集成（可选）
 
-本工具也封装为 [QoderWork](https://qoder.com) Agent Skill，可以通过自然语言驱动，无需手动跑脚本。
+本工具封装了完整的 SKILL.md 流程定义，可以搭配各类 AI 编程/办公助手使用，通过自然语言驱动三阶段清理流程，无需手动跑脚本。
 
-安装方式：将整个 `win-disk-cleanup` 文件夹复制到 `~/.qoderworkcn/skills/` 目录下，重启 QoderWork 即可。之后直接说"帮我清理 C 盘"或"C 盘空间不够了"，Skill 会自动触发。
+### QoderWork
 
-SKILL.md 定义了完整的三阶段交互流程，AI 会依次引导你完成扫描、清理和迁移，每一步都会先向你确认再操作。
+安装方式：将整个 `win-disk-cleanup` 文件夹复制到 `~/.qoderworkcn/skills/` 目录下，重启 [QoderWork](https://qoder.com) 即可。之后直接说"帮我清理 C 盘"或"C 盘空间不够了"，Skill 会自动触发。
+
+### Claude Code
+
+安装方式：在 Claude Code 中打开本仓库目录，或使用 `/skill` 命令加载 `SKILL.md`。之后可以直接用自然语言描述清理需求，Claude Code 会按照 SKILL.md 定义的流程依次执行。
+
+### OpenAI Codex CLI
+
+安装方式：在 Codex CLI 的工作目录中放置 `AGENTS.md` 文件引用本仓库的 `SKILL.md`，或将 SKILL.md 内容写入你的项目指令文件。Codex 会读取指令并按流程执行清理任务。
+
+---
+
+AI 会依次引导你完成扫描、清理和迁移，每一步都会先向你确认再操作。
 
 ## License
 
