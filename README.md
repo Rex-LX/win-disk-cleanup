@@ -1,12 +1,36 @@
 # win-disk-cleanup
 
-Windows C 盘深度清理与 AppData 迁移工具 — 一个 [QoderWork](https://qoder.com) Agent Skill。
+Windows C 盘深度清理与 AppData 迁移工具集。
 
-当你的 C 盘空间告急、AppData 膨胀、各种应用缓存占满磁盘时，这个 Skill 可以帮你系统性地清理垃圾并将大文件夹透明迁移到副盘。
+当你的 C 盘空间告急、AppData 膨胀、各种应用缓存占满磁盘时，这套脚本可以帮你系统性地清理垃圾，并将大文件夹通过 NTFS Junction 透明迁移到副盘，应用完全无感知。
+
+所有脚本都是纯 PowerShell，无需安装任何依赖，直接在终端运行即可。
+
+## 快速开始
+
+```powershell
+# 1. 克隆仓库
+git clone https://github.com/Rex-LX/win-disk-cleanup.git
+cd win-disk-cleanup
+
+# 2. 先扫描，看看 C 盘空间都被谁吃了
+powershell -ExecutionPolicy Bypass -File scripts/scan_disk.ps1
+
+# 3. 快速清理一波（临时文件 + 浏览器缓存 + 回收站）
+powershell -ExecutionPolicy Bypass -File scripts/clean_caches.ps1 -Mode basic
+
+# 4. 还想清更多？深度模式清理应用缓存（网易云、夸克、B站、抖音、Steam 等）
+powershell -ExecutionPolicy Bypass -File scripts/clean_caches.ps1 -Mode deep
+
+# 5. 把 AppData 大文件夹迁移到 D 盘（根治）
+powershell -ExecutionPolicy Bypass -File scripts/check_running.ps1        # 先检查哪些应用在跑
+powershell -ExecutionPolicy Bypass -File scripts/migrate_junctions.ps1     # 执行迁移
+powershell -ExecutionPolicy Bypass -File scripts/verify_junctions.ps1      # 验证迁移结果
+```
 
 ## 功能概览
 
-这个 Skill 分三个阶段工作：
+整套工具分三个阶段，可以按需单独使用，也可以依次执行：
 
 **Phase 1 — 基础清理**：清理临时文件（%TEMP%、Windows\Temp）、浏览器缓存（Chrome/Edge）、缩略图缓存、pip 缓存和回收站，快速释放空间。
 
@@ -14,22 +38,11 @@ Windows C 盘深度清理与 AppData 迁移工具 — 一个 [QoderWork](https:/
 
 **Phase 3 — Junction 迁移**：将 AppData 中的大文件夹透明迁移到 D 盘（或其他副盘），通过 NTFS Junction 让应用完全无感知，从根本上解决 C 盘被吃满的问题。同时支持 npm/yarn/pip 缓存路径迁移。
 
-## 安装
-
-这个 Skill 需要在 QoderWork 中使用。安装步骤：
-
-1. 确保你已安装 [QoderWork](https://qoder.com)
-2. 下载本仓库（`git clone` 或直接下载 ZIP）
-3. 将整个 `win-disk-cleanup` 文件夹复制到 `~/.qoderworkcn/skills/` 目录下
-4. 重启 QoderWork，Skill 会自动加载
-
-你也可以在 QoderWork 中直接对话："帮我清理 C 盘" 或 "C 盘空间不够了"，Skill 会自动触发。
-
 ## 目录结构
 
 ```
 win-disk-cleanup/
-├── SKILL.md                        # Skill 定义与执行流程
+├── SKILL.md                        # QoderWork Skill 定义（可选）
 ├── README.md
 ├── LICENSE
 └── scripts/
@@ -88,12 +101,20 @@ powershell -ExecutionPolicy Bypass -File scripts/verify_junctions.ps1
 
 ## 注意事项
 
-- 所有脚本需要以 PowerShell 执行（`-ExecutionPolicy Bypass`）
-- 基础清理会跳过 `%TEMP%` 中的 `qoder-cli` 子目录，避免清理过程中丢失脚本
-- Junction 迁移前请务必关闭相关应用，脚本会自动检查并提示
+- 所有脚本需要以 PowerShell 执行（`-ExecutionPolicy Bypass`），建议以管理员身份运行
+- 基础清理会跳过 `%TEMP%` 中的 `qoder-cli` 子目录
+- Junction 迁移前请务必关闭相关应用，`check_running.ps1` 会自动检查并提示
 - `Microsoft`、`Packages`、`Programs` 等系统关键目录不会被迁移
 - 迁移失败的文件（因锁定）建议重启后重试
 - 建议在执行前确保目标盘有足够空间
+
+## QoderWork 集成（可选）
+
+本工具也封装为 [QoderWork](https://qoder.com) Agent Skill，可以通过自然语言驱动，无需手动跑脚本。
+
+安装方式：将整个 `win-disk-cleanup` 文件夹复制到 `~/.qoderworkcn/skills/` 目录下，重启 QoderWork 即可。之后直接说"帮我清理 C 盘"或"C 盘空间不够了"，Skill 会自动触发。
+
+SKILL.md 定义了完整的三阶段交互流程，AI 会依次引导你完成扫描、清理和迁移，每一步都会先向你确认再操作。
 
 ## License
 
